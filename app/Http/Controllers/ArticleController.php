@@ -2,27 +2,35 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Article;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use \App\Models\Article;
+use Illuminate\Http\Response;
 
 class ArticleController extends Controller
 {
-    public function index()
+    /**
+     * Display a listing of the resource.
+     */
+    public function index(): Response
     {
         $articles = Article::paginate(5);
-        return view('article.index', compact('articles'));
+        return response()->view('article.index', compact('articles'));
     }
-    public function show($id)
-    {
-        $article = Article::findOrFail($id);
-        return view('article.show', compact('article'));
-    }
-    public function create()
+
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create(): Response
     {
         $article = new Article();
-        return view('article.create', compact('article'));
+        return response()->view('article.create', compact('article'));
     }
-    public function store(Request $request)
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request): RedirectResponse
     {
         $data = $this->validate($request, [
             'name' => 'required|unique:articles',
@@ -32,14 +40,31 @@ class ArticleController extends Controller
         $article->save();
         return redirect()->route('articles.index')->with('flash', 'Article successfully added!');
     }
-    public function edit($id)
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(Article $article): Response
     {
-        $article = Article::findOrFail($id);
-        return view('article.edit', compact('article'));
+        $article = Article::findOrFail($article->id);
+        return response()->view('article.show', compact('article'));
     }
-    public function update(Request $request, $id)
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(Article $article): Response
     {
-        $article = Article::findOrFail($id);
+        $article = Article::findOrFail($article->id);
+        return response()->view('article.edit', compact('article'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, Article $article): RedirectResponse
+    {
+        $article = Article::findOrFail($article->id);
         $data = $this->validate($request, [
             'name' => 'required|unique:articles,name' . $article->id,
             'body' => 'required|min:100']);
@@ -47,13 +72,16 @@ class ArticleController extends Controller
         $article->save();
         return redirect()->route('articles.show', $article)->with('flash', 'Article successfully updated!');
     }
-    public function destroy($id)
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(Article $article): RedirectResponse
     {
-        $article = Article::find($id);
+        $article = Article::find($article->id);
         if ($article) {
             $article->delete();
         }
         return redirect()->route('articles.index')->with('flash', 'Article successfully deleted!');
     }
 }
-
